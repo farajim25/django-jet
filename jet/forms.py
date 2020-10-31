@@ -4,6 +4,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.contrib import admin
 import operator
 
 from jet.models import Bookmark, PinnedApplication
@@ -126,7 +127,9 @@ class ModelLookupForm(forms.Form):
         return data
 
     def lookup(self):
-        qs = self.model_cls.objects
+        # qs = self.model_cls.objects
+        ma = admin.site._registry[self.model_cls]
+        qs = ma.get_queryset(self.request)
 
         if self.cleaned_data['q']:
             if getattr(self.model_cls, 'autocomplete_search_fields', None):
