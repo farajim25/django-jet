@@ -1,6 +1,8 @@
-from django.contrib.admin import RelatedFieldListFilter
+from django.contrib.admin import RelatedFieldListFilter, FieldListFilter
 from django.utils.encoding import smart_text
 from django.utils.html import format_html
+from django.utils.translation import ugettext as _
+
 try:
     from django.core.urlresolvers import reverse
 except ImportError: # Django 1.11
@@ -54,7 +56,6 @@ try:
     from django import forms
     from django.contrib.admin.widgets import AdminDateWidget
     from rangefilter.filter import DateRangeFilter as OriginalDateRangeFilter
-    from django.utils.translation import ugettext as _
 
 
     class DateRangeFilter(OriginalDateRangeFilter):
@@ -89,3 +90,32 @@ try:
             )
 except ImportError:
     pass
+
+
+class InputFilter(FieldListFilter):
+    template = 'admin/filters/input_filter.html'
+
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        self.parameter_name = field.name
+        super().__init__(field, request, params, model, model_admin, field_path)
+
+    def lookups(self, request, model_admin):
+        return ((),)
+
+    def value(self):
+        return self.used_parameters.get(self.parameter_name)
+
+    def choices(self, changelist):
+        query_parts = (
+            (k, v)
+            for k, v in changelist.get_filters_params().items()
+            if k != self.parameter_name
+        )
+        yield {
+            'empty': self.value() is None,
+            'query_parts': query_parts,
+            'query_string': changelist.get_query_string(remove=[self.parameter_name]),
+        }
+
+    def expected_parameters(self):
+        return [self.parameter_name]

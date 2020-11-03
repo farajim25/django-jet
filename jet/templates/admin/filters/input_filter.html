@@ -1,0 +1,41 @@
+{% load i18n %}
+
+<h3>{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</h3>
+
+
+<script>
+  function focus_next(event) {
+    setTimeout(
+      function(e) {
+        var next = e.srcElement.nextElementSibling.querySelector('input');
+        if(next != null) {next.focus(); next.select();}
+      }, 200, event
+    )
+  };
+</script>
+
+<div class="changelist-filter-popup">
+    <input onfocus="focus_next(event)" class="changelist-filter-popup-toggle" type="text" value="{% if spec.value %} {{spec.value}} {% else %} {% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}{% endif %}" readonly/>
+    <div class="changelist-filter-popup-content" style="min-width: 100px;">
+      {% with choices.0 as all_choice %}
+        <form method="GET" action=".">
+
+          {% for k, v in all_choice.query_parts %}
+            <input type="hidden" name="{{ k }}" value="{{ v }}" />
+          {% endfor %}
+
+          <input  type="text"
+                  value="{{ spec.value|default_if_none:'' }}"
+                  name="{{ spec.parameter_name }}"/>
+
+          {% if not all_choice.empty %}
+            <div class="controls" style="padding: 20px 20px 20px 20px;">
+              <strong><a href="{{ all_choice.query_string }}">x {% trans 'Remove' %}</a></strong>
+            </div>
+          {% endif %}
+
+        </form>
+      {% endwith %}
+    </div>
+</div>
+
