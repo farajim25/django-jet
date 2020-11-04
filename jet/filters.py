@@ -54,8 +54,9 @@ class RelatedFieldAjaxListFilter(RelatedFieldListFilter):
 try:
     from collections import OrderedDict
     from django import forms
-    from django.contrib.admin.widgets import AdminDateWidget
+    from django.contrib.admin.widgets import AdminDateWidget, AdminSplitDateTime
     from rangefilter.filter import DateRangeFilter as OriginalDateRangeFilter
+    from rangefilter.filter import DateTimeRangeFilter as OriginalDateTimeRangeFilter
 
 
     class DateRangeFilter(OriginalDateRangeFilter):
@@ -88,6 +89,97 @@ try:
             return forms.Media(
                 css={'all': ['range_filter/css/%s' % path for path in css]}
             )
+
+
+    class DateTimeRangeFilter(OriginalDateTimeRangeFilter):
+        def get_template(self):
+            return 'rangefilter/date_filter.html'
+
+        def _get_form_fields(self):
+            return OrderedDict(
+                (
+                    (self.lookup_kwarg_gte, forms.SplitDateTimeField(
+                        label='',
+                        widget=AdminSplitDateTime(attrs={'placeholder': _('From date'), 'autocomplete': 'off'}),
+                        localize=True,
+                        required=False
+                    )),
+                    (self.lookup_kwarg_lte, forms.SplitDateTimeField(
+                        label='',
+                        widget=AdminSplitDateTime(attrs={'placeholder': _('To date'), 'autocomplete': 'off'}),
+                        localize=True,
+                        required=False
+                    )),
+                )
+            )
+
+        @staticmethod
+        def _get_media():
+            css = [
+                'style.css',
+            ]
+            return forms.Media(
+                css={'all': ['range_filter/css/%s' % path for path in css]}
+            )
+
+except ImportError:
+    pass
+
+try:
+    from django.templatetags.static import StaticNode
+    from rangefilter_jalali.filter import jDateRangeFilter as OriginaljDateRangeFilter
+    from rangefilter_jalali.filter import jDateTimeRangeFilter as OriginaljDateTimeRangeFilter
+    from rangefilter_jalali.filter import DateRangeFilter as OriginalGDateRangeFilter
+    from rangefilter_jalali.filter import DateTimeRangeFilter as OriginalGDateTimeRangeFilter
+
+    class JalaliRangeFilterMixin:
+        def get_template(self):
+            return 'rangefilter/date_filter.html'
+
+        @staticmethod
+        def get_js():
+            return [
+                StaticNode.handle_simple('admin/js/calendar.js'),
+                StaticNode.handle_simple('admin/js/admin/DateTimeShortcuts.js'),
+            ]
+
+        @staticmethod
+        def _get_media():
+            js = [
+                'admin/js/calendar.js',
+                'admin/js/admin/DateTimeShortcuts.js',
+                'admin/jquery.ui.datepicker.jalali/scripts/jquery-1.10.2.min.js',
+                'admin/jquery.ui.datepicker.jalali/scripts/jquery.ui.core.js',
+                'admin/jquery.ui.datepicker.jalali/scripts/jquery.ui.datepicker-cc.js',
+                'admin/jquery.ui.datepicker.jalali/scripts/calendar.js',
+                'admin/jquery.ui.datepicker.jalali/scripts/jquery.ui.datepicker-cc-fa.js',
+                'admin/main.js',
+            ]
+            css = [
+                'widgets.css',
+                'main.css',
+            ]
+            jet_css = [
+                'style.css',
+                'jalali.css'
+            ]
+            return forms.Media(
+                js=['%s' % url for url in js],
+                css={'all': ['admin/css/%s' % path for path in css] + ['range_filter/css/%s' % path for path in jet_css]}
+            )
+
+    class GDateRangeFilter(JalaliRangeFilterMixin, OriginalGDateRangeFilter):
+        pass
+
+    class GDatetimeRangeFilter(JalaliRangeFilterMixin, OriginalGDateTimeRangeFilter):
+        pass
+
+    class JDateRangeFilter(JalaliRangeFilterMixin, OriginaljDateRangeFilter):
+        pass
+
+    class JDatetimeRangeFilter(JalaliRangeFilterMixin, OriginaljDateTimeRangeFilter):
+        pass
+
 except ImportError:
     pass
 

@@ -1,5 +1,15 @@
 {% load i18n admin_static %}
 <h3>{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</h3>
+
+{% block extrahead %}
+    <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/jquery.ui.datepicker.jalali/themes/base/jquery-ui.min.css' %}">
+    {{form.media}}
+    <script src="{% static 'admin/jquery.ui.datepicker.jalali/scripts/jquery-1.10.2.min.js' %}"></script>
+    <script src="{% static 'admin/jquery.ui.datepicker.jalali/scripts/jquery.ui.datepicker-cc.js' %}"></script>
+    <script src="{% static 'admin/main.js' %}"></script>
+{% endblock %}
+
 <script>
     function datefilter_apply(event, qs_name, form_name){
         event.preventDefault();
