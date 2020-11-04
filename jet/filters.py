@@ -93,7 +93,7 @@ except ImportError:
 
 
 class InputFilter(FieldListFilter):
-    template = 'admin/filters/input_filter.html'
+    template = 'jet-filters/inputfilter/input_filter.html'
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         self.parameter_name = field.name
